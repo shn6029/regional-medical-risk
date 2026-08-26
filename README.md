@@ -113,12 +113,15 @@ Supabase에 저장된 최신 완료 2SFCA 실행을 읽는 FastAPI 서버입니�
 Render 배포 설정은 루트의 `render.yaml`에 준비되어 있습니다. GitHub에 푸시한 뒤
 Render Dashboard에서 `New > Blueprint`로 저장소를 선택하고, 화면에 표시되는
 `DATABASE_URL`에 Supabase Session pooler 연결 문자열을 입력합니다. Python은
-`.python-version`에 따라 3.12 최신 패치 버전을 사용합니다.
+`.python-version`에 따라 3.12 최신 패치 버전을 사용합니다. Blueprint는 FastAPI와
+Streamlit을 각각 별도 Web Service로 만들고, Streamlit의 `API_BASE_URL`은 FastAPI의
+Render URL을 자동으로 참조합니다.
 
 ```text
 Region: Singapore
 Plan: Free
-Health Check: /health
+API Health Check: /health
+Web Health Check: /_stcore/health
 ```
 
 원본 파일에서 처리 데이터를 다시 생성하려면 다음 명령을 사용합니다.

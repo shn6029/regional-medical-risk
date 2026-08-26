@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
+import requests
 import streamlit as st
 
 from regional_medical_risk.data import (
@@ -71,6 +72,19 @@ def load_geojson(data_dir: Path) -> dict | None:
 @st.cache_data
 def model_benchmarks(population: pd.DataFrame) -> pd.DataFrame:
     return benchmark_models(population)
+
+
+@st.cache_data(ttl=300)
+def load_accessibility_api(api_base_url: str) -> tuple[dict, pd.DataFrame]:
+    latest_response = requests.get(
+        f"{api_base_url}/api/v1/accessibility/latest", timeout=90
+    )
+    latest_response.raise_for_status()
+    regions_response = requests.get(
+        f"{api_base_url}/api/v1/accessibility/regions", timeout=90
+    )
+    regions_response.raise_for_status()
+    return latest_response.json(), pd.DataFrame(regions_response.json()["items"])
 
 
 def risk_components(region: pd.Series) -> pd.DataFrame:
@@ -213,6 +227,15 @@ national = load_bundle(NATIONAL_DIR)
     national_routes,
 ) = national
 national_validation = load_validation(NATIONAL_DIR)
+api_base_url = _env_value("API_BASE_URL").rstrip("/")
+accessibility_summary = None
+accessibility_regions = pd.DataFrame()
+accessibility_error = None
+if api_base_url:
+    try:
+        accessibility_summary, accessibility_regions = load_accessibility_api(api_base_url)
+    except (requests.RequestException, KeyError, ValueError) as error:
+        accessibility_error = str(error)
 
 st.title("전국 의료 인프라 취약도")
 st.caption(
@@ -220,8 +243,22 @@ st.caption(
     "실제 의료·정책 판단용 지표가 아닙니다."
 )
 
-tab_overview, tab_map, tab_detail, tab_forecast, tab_simulation = st.tabs(
-    ["① 전국 개요", "② 전국 지도", "③ 지역 상세", "④ 미래 예측", "⑤ What-if"]
+(
+    tab_overview,
+    tab_map,
+    tab_detail,
+    tab_forecast,
+    tab_simulation,
+    tab_accessibility,
+) = st.tabs(
+    [
+        "① 전국 개요",
+        "② 전국 지도",
+        "③ 지역 상세",
+        "④ 미래 예측",
+        "⑤ What-if",
+        "⑥ 2SFCA",
+    ]
 )
 
 with tab_overview:
@@ -520,6 +557,69 @@ with tab_simulation:
             ],
             hide_index=True,
         )
+
+with tab_accessibility:
+    st.subheader("30분 의료 접근성과 2SFCA")
+    if accessibility_error:
+        st.warning(
+            "2SFCA API를 일시적으로 불러오지 못했습니다. 무료 서버가 깨어나는 중이면 "
+            "잠시 후 다시 실행해 주세요."
+        )
+        st.caption(accessibility_error)
+    elif accessibility_summary is None or accessibility_regions.empty:
+        st.info("배포 환경의 `API_BASE_URL`을 설정하면 최신 Supabase 결과를 표시합니다.")
+    else:
+        cols = st.columns(5)
+        cols[0].metric(
+            "고령인구 30분 접근률",
+            f"{accessibility_summary['senior_coverage_pct']:.2f}%",
+        )
+        cols[1].metric(
+            "접근 가능 수요점",
+            f"{accessibility_summary['covered_demand_count']:,}개",
+        )
+        cols[2].metric(
+            "전체 수요점", f"{accessibility_summary['demand_point_count']:,}개"
+        )
+        cols[3].metric("분석 지역", f"{len(accessibility_regions):,}개")
+        cols[4].metric("경로", f"{accessibility_summary['route_count']:,}개")
+
+        accessibility_province = st.selectbox(
+            "2SFCA 시·도",
+            ["전국", *sorted(accessibility_regions["province_name"].unique())],
+        )
+        visible_accessibility = accessibility_regions
+        if accessibility_province != "전국":
+            visible_accessibility = visible_accessibility[
+                visible_accessibility["province_name"].eq(accessibility_province)
+            ]
+        st.dataframe(
+            visible_accessibility.sort_values("two_sfca_score")[
+                [
+                    "province_name",
+                    "region_name",
+                    "senior_within_threshold_pct",
+                    "two_sfca_score",
+                ]
+            ].rename(
+                columns={
+                    "province_name": "시·도",
+                    "region_name": "시·군·구",
+                    "senior_within_threshold_pct": "고령인구 30분 접근률(%)",
+                    "two_sfca_score": "2SFCA 점수",
+                }
+            ),
+            hide_index=True,
+            width="stretch",
+        )
+        estimated_share = accessibility_summary.get("parameters", {}).get(
+            "estimated_route_share_pct"
+        )
+        if estimated_share is not None:
+            st.caption(
+                f"전체 경로 중 {estimated_share:.2f}%는 도로 원점 문제로 추정한 "
+                "이동시간입니다. 실제 의료·정책 판단용 지표가 아닙니다."
+            )
 
 st.divider()
 st.caption("취약도 = 고령화 25% + 인구감소 20% + 의료공급 부족 25% + 접근거리 30%")

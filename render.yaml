@@ -12,3 +12,18 @@ services:
         sync: false
       - key: DB_POOL_MAX_SIZE
         value: 5
+
+  - type: web
+    name: regional-medical-risk-web
+    runtime: python
+    region: singapore
+    plan: free
+    buildCommand: pip install -r requirements-web.txt && pip install --no-deps .
+    startCommand: python -m streamlit run app/streamlit_app.py --server.address=0.0.0.0 --server.port=$PORT --server.headless=true --browser.gatherUsageStats=false
+    healthCheckPath: /_stcore/health
+    envVars:
+      - key: API_BASE_URL
+        fromService:
+          type: web
+          name: regional-medical-risk-api
+          envVarKey: RENDER_EXTERNAL_URL

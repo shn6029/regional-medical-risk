@@ -10,4 +10,5 @@ def test_dashboard_renders_without_exceptions():
     app = AppTest.from_file(APP_PATH).run(timeout=60)
 
     assert not app.exception
-    assert len(app.tabs) == 5
+    assert len(app.tabs) == 6
+    assert app.tabs[-1].label == "⑥ 2SFCA"
