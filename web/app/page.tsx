@@ -1,44 +1,141 @@
-import { Activity } from 'lucide-react'
-import { Dashboard } from '@/components/dashboard'
+'use client'
 
-export default function Page() {
+import { useMemo } from 'react'
+import {
+  Users,
+  Building2,
+  MapPinned,
+  TriangleAlert,
+  Lightbulb,
+} from 'lucide-react'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card'
+import { PageHeader } from '@/components/page-header'
+import { KpiCard } from '@/components/kpi-card'
+import { GradeDistribution } from '@/components/grade-distribution'
+import { FilterBar } from '@/components/filter-bar'
+import { RegionRankTable } from '@/components/region-rank-table'
+import { SampleNotice } from '@/components/sample-notice'
+import { useSelection } from '@/components/selection-context'
+import {
+  NATIONAL,
+  filterRegions,
+  gradeDistribution,
+} from '@/lib/sample-data'
+import { formatNumber, formatPercent } from '@/lib/utils'
+
+export default function OverviewPage() {
+  const { province, query } = useSelection()
+
+  const filtered = useMemo(
+    () =>
+      [...filterRegions({ province, query })].sort(
+        (a, b) => b.vulnerability.total - a.vulnerability.total,
+      ),
+    [province, query],
+  )
+  const distribution = useMemo(() => gradeDistribution(), [])
+
   return (
-    <div className="min-h-dvh">
-      <header className="border-b bg-card">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Activity className="h-5 w-5" />
-            </span>
-            <div>
-              <h1 className="text-lg font-bold tracking-tight text-balance">
-                지역별 의료 취약도 · 접근성 대시보드
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                전국 시·군·구 2SFCA 의료 접근성 분석
+    <div className="space-y-6">
+      <PageHeader
+        title="전국 의료 인프라 취약도 개요"
+        description={`전국 ${NATIONAL.analyzedRegions}개 시·군·자치구의 인구구조와 의료 접근성을 종합한 취약도 진단입니다. (인구 ${NATIONAL.baseDate.population} · 의료기관 ${NATIONAL.baseDate.facility})`}
+      />
+
+      <section
+        className="grid grid-cols-2 gap-3 lg:grid-cols-5"
+        aria-label="전국 요약 지표"
+      >
+        <KpiCard
+          label="분석 지역"
+          value={formatNumber(NATIONAL.analyzedRegions)}
+          unit="개"
+          sub="시·군·자치구 단위"
+          icon={MapPinned}
+        />
+        <KpiCard
+          label="총 인구"
+          value={formatNumber(NATIONAL.totalPopulation)}
+          unit="명"
+          sub={`고령화율 ${formatPercent(NATIONAL.seniorRate)}`}
+          icon={Users}
+        />
+        <KpiCard
+          label="의료기관"
+          value={formatNumber(NATIONAL.hospitalCount)}
+          unit="개소"
+          sub="병원급 이상"
+          icon={Building2}
+        />
+        <KpiCard
+          label="주의·위험 지역"
+          value={formatNumber(NATIONAL.cautionDangerRegions)}
+          unit="개"
+          sub={`전체의 ${formatPercent(NATIONAL.cautionDangerPct)}`}
+          icon={TriangleAlert}
+          accent="var(--risk-high)"
+        />
+        <KpiCard
+          label="고령화율"
+          value={formatPercent(NATIONAL.seniorRate)}
+          sub="65세 이상 비율"
+          icon={Users}
+          className="col-span-2 lg:col-span-1"
+        />
+      </section>
+
+      <Card className="border-l-4 border-l-primary">
+        <CardContent className="flex items-start gap-3 py-4">
+          <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+            <Lightbulb className="size-4" />
+          </span>
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-foreground">핵심 인사이트</p>
+            <p className="text-sm leading-relaxed text-muted-foreground text-pretty break-keep">
+              {NATIONAL.insight}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 lg:grid-cols-5">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>위험등급 분포</CardTitle>
+            <CardDescription>취약도 점수 기준 4단계 등급</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <GradeDistribution counts={distribution} />
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle>취약도 상위 지역</CardTitle>
+            <CardDescription>
+              행을 선택하면 지역 상세로 이동합니다
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FilterBar />
+            {filtered.length > 0 ? (
+              <RegionRankTable regions={filtered.slice(0, 10)} />
+            ) : (
+              <p className="rounded-lg border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
+                조건에 맞는 지역이 없습니다. 필터를 조정해 보세요.
               </p>
-            </div>
-          </div>
-          <div className="hidden items-center gap-1.5 rounded-full border bg-background px-3 py-1.5 text-xs text-muted-foreground sm:flex">
-            <span className="h-2 w-2 rounded-full bg-[var(--risk-low)]" aria-hidden />
-            FastAPI REST 연동
-          </div>
-        </div>
-      </header>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        <Dashboard />
-      </main>
-
-      <footer className="border-t">
-        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6">
-          <p className="text-xs leading-relaxed text-muted-foreground text-pretty">
-            본 대시보드는 2SFCA(2-Step Floating Catchment Area) 기반 접근성 분석을 시각화합니다.
-            위험도 등급은 고령자 접근성 커버리지에서 파생된 참고 지표이며, 실제 의료·정책 판단용
-            지표가 아닙니다.
-          </p>
-        </div>
-      </footer>
+      <SampleNotice />
     </div>
   )
 }
