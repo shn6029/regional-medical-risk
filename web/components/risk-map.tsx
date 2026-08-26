@@ -1,19 +1,16 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import type { LatLngBoundsExpression } from 'leaflet'
+import { latLngBounds } from 'leaflet'
 import { getRiskFromCoverage } from '@/lib/api'
 import { formatNumber, formatPercent } from '@/lib/utils'
 import type { RegionScore } from '@/lib/types'
 
-// 대한민국 전역(제주 포함)을 감싸는 범위. 지도가 이 밖(중국·일본)으로
-// 넘어가지 않도록 maxBounds로 제한한다.
-const KOREA_BOUNDS: LatLngBoundsExpression = [
-  [32.9, 124.3], // 남서(제주 남단 아래)
-  [38.7, 132.1], // 북동(독도 동쪽)
-]
+// 대한민국 본토+제주를 감싸는 범위. 지도가 이 밖(중국·일본)으로
+// 넘어가지 않도록 maxBounds/최소 줌으로 제한한다.
+const KOREA_BOUNDS = latLngBounds([33.0, 125.0], [38.7, 130.0])
 
 // 커버리지가 낮을수록(위험) 마커를 크게 강조한다.
 function markerRadius(coveragePct: number): number {
@@ -21,21 +18,29 @@ function markerRadius(coveragePct: number): number {
   return 5 + ((100 - clamped) / 100) * 9
 }
 
-function FitBounds({ regions }: { regions: RegionScore[] }) {
+/**
+ * 지도를 항상 대한민국 범위에 맞춰 프레이밍하고, 그 밖으로 나가지 못하게
+ * 잠근다. 화면 크기에 따라 최소 줌을 계산해 축소해도 이웃 국가가 크게
+ * 보이지 않도록 하고, 리사이즈 시 다시 맞춘다.
+ */
+function ConstrainToKorea() {
   const map = useMap()
-  const points = regions
-    .filter((r) => r.center_latitude != null && r.center_longitude != null)
-    .map((r) => [r.center_latitude as number, r.center_longitude as number] as [number, number])
 
-  useMemo(() => {
-    if (points.length === 0) return
-    if (points.length === 1) {
-      map.setView(points[0], 10)
-    } else {
-      map.fitBounds(points, { padding: [30, 30] })
+  useEffect(() => {
+    const apply = () => {
+      map.setMaxBounds(KOREA_BOUNDS)
+      // 한국 전체(전국 마커)가 한눈에 들어오도록 맞추고, 그 줌을 최소 줌으로
+      // 잠근다 → 더 축소하거나 범위 밖으로 이동할 수 없다.
+      const fitZoom = map.getBoundsZoom(KOREA_BOUNDS, false)
+      map.setMinZoom(fitZoom)
+      map.fitBounds(KOREA_BOUNDS, { animate: false })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [regions])
+    apply()
+    map.on('resize', apply)
+    return () => {
+      map.off('resize', apply)
+    }
+  }, [map])
 
   return null
 }
@@ -57,18 +62,17 @@ export default function RiskMap({
     <MapContainer
       center={[36.5, 127.8]}
       zoom={7}
-      minZoom={6}
       maxBounds={KOREA_BOUNDS}
       maxBoundsViscosity={1.0}
       scrollWheelZoom
-      className="h-[520px] w-full rounded-xl"
+      className="h-[560px] w-full rounded-xl md:h-[640px]"
       style={{ zIndex: 0 }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
       />
-      <FitBounds regions={mappable} />
+      <ConstrainToKorea />
       {mappable.map((region) => {
         const risk = getRiskFromCoverage(region.senior_within_threshold_pct)
         const isSelected = region.region_code === selectedCode
