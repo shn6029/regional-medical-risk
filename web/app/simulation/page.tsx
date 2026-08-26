@@ -203,9 +203,6 @@ export default function SimulationPage() {
   )
 }
 
-import type { LucideIcon } from 'lucide-react'
-import { KpiCard } from '@/components/kpi-card'
-
 function KpiDelta(props: {
   label: string
   value: string
