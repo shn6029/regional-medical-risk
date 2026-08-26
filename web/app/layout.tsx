@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import { Noto_Sans_KR, Geist_Mono } from 'next/font/google'
 import './globals.css'
+import { SelectionProvider } from '@/components/selection-context'
+import { AppShell } from '@/components/app-shell'
 
 const notoSansKr = Noto_Sans_KR({
   subsets: ['latin'],
@@ -16,9 +18,9 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: '지역별 의료 취약도 · 접근성 대시보드',
+  title: '전국 의료 인프라 취약도',
   description:
-    '전국 시·군·구 단위 2SFCA 의료 접근성과 지역별 의료 취약도를 시각화하는 공공 데이터 대시보드입니다.',
+    '전국 229개 시·군·자치구의 인구구조와 의료 접근성을 분석하고, 병원 폐업 영향을 탐색하는 공공 데이터 분석 대시보드입니다.',
 }
 
 export const viewport: Viewport = {
@@ -34,7 +36,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" className={`${notoSansKr.variable} ${geistMono.variable} bg-background`}>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <SelectionProvider>
+          <AppShell>{children}</AppShell>
+        </SelectionProvider>
+      </body>
     </html>
   )
 }
