@@ -1,7 +1,5 @@
 import type { RiskInfo, RiskLevel } from './types'
 
-export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').replace(/\/$/, '')
-
 export class ApiError extends Error {
   status: number
   constructor(message: string, status: number) {
@@ -11,18 +9,16 @@ export class ApiError extends Error {
   }
 }
 
-/** SWR 전용 fetcher. 상대 경로 key를 받아 API_BASE_URL과 결합한다. */
+/**
+ * SWR 전용 fetcher. 상대 경로 key(예: `/api/v1/accessibility/latest`)를 받아
+ * 같은 출처의 서버 사이드 프록시(`/api/proxy/...`)를 통해 FastAPI로 전달한다.
+ * 브라우저가 FastAPI를 직접 호출하지 않으므로 CORS/Mixed Content가 없다.
+ * 실제 업스트림 주소는 프록시가 서버에서 NEXT_PUBLIC_API_BASE_URL로 읽는다.
+ */
 export async function fetcher<T>(path: string): Promise<T> {
-  if (!API_BASE_URL) {
-    throw new ApiError(
-      'NEXT_PUBLIC_API_BASE_URL 환경변수가 설정되지 않았습니다.',
-      0,
-    )
-  }
-
   let response: Response
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
+    response = await fetch(`/api/proxy${path}`, {
       headers: { Accept: 'application/json' },
     })
   } catch {
