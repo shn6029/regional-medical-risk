@@ -3,9 +3,17 @@
 import { useMemo } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
+import type { LatLngBoundsExpression } from 'leaflet'
 import { getRiskFromCoverage } from '@/lib/api'
 import { formatNumber, formatPercent } from '@/lib/utils'
 import type { RegionScore } from '@/lib/types'
+
+// 대한민국 전역(제주 포함)을 감싸는 범위. 지도가 이 밖(중국·일본)으로
+// 넘어가지 않도록 maxBounds로 제한한다.
+const KOREA_BOUNDS: LatLngBoundsExpression = [
+  [32.9, 124.3], // 남서(제주 남단 아래)
+  [38.7, 132.1], // 북동(독도 동쪽)
+]
 
 // 커버리지가 낮을수록(위험) 마커를 크게 강조한다.
 function markerRadius(coveragePct: number): number {
@@ -49,6 +57,9 @@ export default function RiskMap({
     <MapContainer
       center={[36.5, 127.8]}
       zoom={7}
+      minZoom={6}
+      maxBounds={KOREA_BOUNDS}
+      maxBoundsViscosity={1.0}
       scrollWheelZoom
       className="h-[520px] w-full rounded-xl"
       style={{ zIndex: 0 }}
