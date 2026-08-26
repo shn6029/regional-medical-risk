@@ -18,7 +18,7 @@ import { CLOSURE_VALIDATION } from '@/lib/simulation'
  * 대각선(y=x)에 가까울수록 예측이 관측과 일치한다.
  */
 export function ClosureScatter() {
-  const data = CLOSURE_VALIDATION.scatter
+  const data = CLOSURE_VALIDATION.scatter.map((d) => ({ ...d }))
   const max =
     Math.ceil(
       Math.max(...data.flatMap((d) => [d.predicted, d.observed])) * 10,

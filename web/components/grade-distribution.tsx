@@ -27,33 +27,46 @@ export function GradeDistribution({
           )
         })}
       </div>
-      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <ul className="space-y-3">
         {RISK_ORDER.map((lvl: RiskLevel) => {
           const count = counts[lvl] ?? 0
           const pct = total > 0 ? (count / total) * 100 : 0
+          const maxCount = Math.max(
+            1,
+            ...RISK_ORDER.map((l) => counts[l] ?? 0),
+          )
+          const barPct = (count / maxCount) * 100
           return (
-            <li key={lvl} className="flex flex-col gap-1">
-              <div className="flex items-center gap-1.5">
-                <span
-                  className="size-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: RISK_HEX[lvl] }}
-                  aria-hidden
+            <li key={lvl} className="space-y-1.5">
+              <div className="flex items-center justify-between gap-2 text-sm">
+                <span className="flex items-center gap-1.5">
+                  <span
+                    className="size-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: RISK_HEX[lvl] }}
+                    aria-hidden
+                  />
+                  <span className="font-medium text-foreground">
+                    {RISK_LABEL[lvl]}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {RISK_RANGE[lvl]}점
+                  </span>
+                </span>
+                <span className="shrink-0 tabular-nums">
+                  <span className="font-mono font-bold text-foreground">
+                    {count}
+                  </span>
+                  <span className="ml-1 text-xs text-muted-foreground">
+                    개 · {pct.toFixed(0)}%
+                  </span>
+                </span>
+              </div>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${barPct}%`, backgroundColor: RISK_HEX[lvl] }}
                 />
-                <span className="text-sm font-medium text-foreground">
-                  {RISK_LABEL[lvl]}
-                </span>
               </div>
-              <div className="flex items-baseline gap-1 pl-4">
-                <span className="font-mono text-lg font-bold text-foreground">
-                  {count}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  개 · {pct.toFixed(0)}%
-                </span>
-              </div>
-              <span className="pl-4 text-[0.7rem] text-muted-foreground">
-                {RISK_RANGE[lvl]}점
-              </span>
             </li>
           )
         })}
