@@ -90,7 +90,7 @@ export function AccessibilityCharts({ regions }: { regions: RegionScore[] }) {
                 cursor={{ fill: 'var(--muted)', opacity: 0.4 }}
                 content={<ChartTooltip suffix="개" />}
               />
-              <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={64}>
+              <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={64} isAnimationActive={false}>
                 {distribution.map((d) => (
                   <Cell key={d.name} fill={d.hex} />
                 ))}
@@ -134,7 +134,7 @@ export function AccessibilityCharts({ regions }: { regions: RegionScore[] }) {
                 cursor={{ fill: 'var(--muted)', opacity: 0.4 }}
                 content={<ChartTooltip suffix="%" />}
               />
-              <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={22}>
+              <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={22} isAnimationActive={false}>
                 {bottom.map((d) => (
                   <Cell key={d.name} fill={d.hex} />
                 ))}
