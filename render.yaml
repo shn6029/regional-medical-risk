@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: regional-medical-risk-api
+    runtime: python
+    region: singapore
+    plan: free
+    buildCommand: pip install -r requirements-api.txt && pip install --no-deps .
+    startCommand: python -m uvicorn regional_medical_risk.api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DB_POOL_MAX_SIZE
+        value: 5

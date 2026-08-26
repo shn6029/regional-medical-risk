@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.env
+.streamlit/
+.agents/
+.claude/
+.tmp/
+.codex-tmp/
+artifacts/
+*.egg-info/
+data/raw/*
+!data/raw/README.md

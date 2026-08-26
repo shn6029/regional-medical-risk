@@ -1,0 +1,9 @@
+hospital_id,hospital_name,hospital_type,region_code,closed_on,baseline_date,comparison_date,predicted_distance_delta_km,observed_distance_delta_km,predicted_direction,observed_direction,direction_agreement,predicted_risk_delta,observed_risk_delta,affected_population,affected_senior_population,hospital_count_before,hospital_count_observed
+JDQ4MTYyMiM4MSMkMSMkMCMkOTkkNTgxMzUxIzIxIyQxIyQxIyQ5MiQ0NjEwMDIjNjEjJDEjJDAjJDgz,호암의료재단 우리요양병원,요양병원,47110,2024-08-22,2023-12-31,2024-12-31,0.0,0.0,stable,stable,True,0.3,0.6,0,0,45,43
+JDQ4MTYyMiM4MSMkMSMkMCMkOTkkMzgxMzUxIzIxIyQxIyQ5IyQ3OSQ0NjEwMDIjNTEjJDEjJDIjJDgz,흥해아동병원,병원,47110,2024-10-22,2023-12-31,2024-12-31,0.0,0.0,stable,stable,True,0.3,0.6,0,0,45,43
+JDQ4MTYyMiM4MSMkMSMkMCMkOTkkNTgxMzUxIzExIyQxIyQ3IyQ4OSQ0NjEwMDIjNjEjJDEjJDAjJDgz,의료법인청하의료재단 청하요양병원 인왕점,요양병원,47130,2024-01-29,2023-12-31,2024-12-31,0.02,0.03,stable,stable,True,0.7,0.8,4872,1904,24,23
+JDQ4MTYyMiM4MSMkMSMkMCMkOTkkMzgxOTYxIzExIyQxIyQzIyQ3OSQyNjEyMjIjNjEjJDEjJDQjJDgz,영주프라임병원,병원,47210,2024-10-04,2023-12-31,2024-12-31,0.0,0.0,stable,stable,True,1.6,1.6,10401,3410,12,11
+JDQ4MTYyMiM4MSMkMSMkMCMkOTkkNTgxMzUxIzIxIyQxIyQxIyQ5OSQzNjE0ODEjNzEjJDEjJDgjJDgz,진량삼성요양병원,요양병원,47290,2024-01-02,2023-12-31,2024-12-31,0.51,0.51,increase,increase,True,2.3,2.3,41630,7699,18,17
+JDQ4MTYyMiM4MSMkMSMkMCMkOTkkNTgxMzUxIzIxIyQxIyQxIyQ3OSQzNjEwMDIjNDEjJDEjJDgjJDgz,의료법인인덕의료재단 복주요양병원,요양병원,47170,2025-05-15,2024-12-31,2025-12-31,0.0,0.0,stable,stable,True,1.0,1.0,0,0,17,16
+JDQ4MTYyMiM4MSMkMSMkMCMkOTkkMzgxMzUxIzIxIyQyIyQ5IyQwMCQ0NjEwMDIjNjEjJDEjJDAjJDgz,꿈나무아동병원,병원,47290,2025-08-11,2024-12-31,2025-12-31,0.07,0.0,stable,stable,True,0.8,0.5,33718,6029,17,16
+JDQ4MTYyMiM4MSMkMSMkMCMkOTkkMzgxMzUxIzMxIyQxIyQzIyQ3OSQyNjEwMDIjNTEjJDEjJDYjJDgz,의료법인 동오의료재단 도움병원,병원,47290,2025-01-18,2024-12-31,2025-12-31,0.0,0.0,stable,stable,True,0.5,0.5,42886,9360,17,16
