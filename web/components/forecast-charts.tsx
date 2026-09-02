@@ -27,8 +27,11 @@ function tickManman(v: number) {
 /** 실측(2016~2024) vs 예측(2024~2028) 라인차트. */
 export function ForecastSeriesChart() {
   return (
-    <ResponsiveContainer width="100%" height={320}>
-      <LineChart data={FORECAST_SERIES} margin={{ top: 8, right: 12, bottom: 0, left: 4 }}>
+    <ResponsiveContainer width="100%" height={340}>
+      <LineChart
+        data={FORECAST_SERIES}
+        margin={{ top: 28, right: 16, bottom: 4, left: 12 }}
+      >
         <CartesianGrid stroke={GRID} strokeDasharray="3 3" vertical={false} />
         <XAxis dataKey="year" stroke={AXIS} fontSize={12} tickLine={false} />
         <YAxis
@@ -37,7 +40,7 @@ export function ForecastSeriesChart() {
           tickLine={false}
           axisLine={false}
           tickFormatter={tickManman}
-          width={44}
+          width={52}
         />
         <Tooltip
           formatter={(value: number) => [`${formatNumber(value)}명`, '']}
@@ -87,8 +90,12 @@ export function ModelMaeChart() {
     isBaseline: m.isBaseline,
   }))
   return (
-    <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 8 }}>
+    <ResponsiveContainer width="100%" height={380}>
+      <BarChart
+        data={data}
+        layout="vertical"
+        margin={{ top: 12, right: 16, bottom: 12, left: 8 }}
+      >
         <CartesianGrid stroke={GRID} strokeDasharray="3 3" horizontal={false} />
         <XAxis type="number" stroke={AXIS} fontSize={12} tickLine={false} />
         <YAxis

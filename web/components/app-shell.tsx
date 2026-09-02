@@ -11,6 +11,8 @@ import {
   Map as MapIcon,
   MapPin,
   Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
   TrendingUp,
   X,
 } from 'lucide-react'
@@ -39,22 +41,33 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
-function Brand() {
+function Brand({ collapsed = false }: { collapsed?: boolean }) {
   return (
     <div className="flex items-center gap-2.5">
       <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
         <Activity className="size-5" />
       </span>
-      <span className="text-sm font-bold leading-tight text-foreground break-keep">
-        전국 의료 인프라
-        <br />
-        취약도 분석
-      </span>
+      {!collapsed ? (
+        <span className="leading-tight break-keep">
+          <span className="block text-base font-bold tracking-tight text-foreground">
+            메디리치
+          </span>
+          <span className="block text-[11px] font-medium tracking-wide text-muted-foreground">
+            MediReach
+          </span>
+        </span>
+      ) : null}
     </div>
   )
 }
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function NavLinks({
+  collapsed = false,
+  onNavigate,
+}: {
+  collapsed?: boolean
+  onNavigate?: () => void
+}) {
   const pathname = usePathname()
   return (
     <nav className="flex flex-col gap-1" aria-label="주요 메뉴">
@@ -67,15 +80,18 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             href={item.href}
             onClick={onNavigate}
             aria-current={active ? 'page' : undefined}
+            aria-label={collapsed ? item.label : undefined}
+            title={collapsed ? item.label : undefined}
             className={cn(
               'flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
+              collapsed && 'justify-center px-2',
               active
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground',
             )}
           >
             <Icon className="size-4 shrink-0" />
-            <span className="break-keep">{item.label}</span>
+            {!collapsed ? <span className="break-keep">{item.label}</span> : null}
           </Link>
         )
       })}
@@ -85,22 +101,51 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = React.useState(false)
+  const [desktopCollapsed, setDesktopCollapsed] = React.useState(false)
 
   return (
     <div className="min-h-screen bg-background lg:flex">
       {/* 데스크톱 사이드바 */}
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-card lg:flex lg:h-screen lg:sticky lg:top-0">
-        <div className="border-b border-border p-4">
-          <Brand />
+      <aside
+        className={cn(
+          'hidden shrink-0 flex-col border-r border-border bg-card transition-[width] duration-200 lg:flex lg:h-screen lg:sticky lg:top-0',
+          desktopCollapsed ? 'w-20' : 'w-64',
+        )}
+      >
+        <div
+          className={cn(
+            'border-b border-border p-3',
+            desktopCollapsed
+              ? 'flex flex-col items-center gap-2'
+              : 'flex items-center justify-between',
+          )}
+        >
+          <Brand collapsed={desktopCollapsed} />
+          <button
+            type="button"
+            aria-label={desktopCollapsed ? '사이드바 펼치기' : '사이드바 접기'}
+            title={desktopCollapsed ? '사이드바 펼치기' : '사이드바 접기'}
+            aria-expanded={!desktopCollapsed}
+            onClick={() => setDesktopCollapsed((collapsed) => !collapsed)}
+            className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            {desktopCollapsed ? (
+              <PanelLeftOpen className="size-4" />
+            ) : (
+              <PanelLeftClose className="size-4" />
+            )}
+          </button>
         </div>
         <div className="flex-1 overflow-y-auto p-3">
-          <NavLinks />
+          <NavLinks collapsed={desktopCollapsed} />
         </div>
-        <div className="border-t border-border p-4 text-xs leading-relaxed text-muted-foreground">
-          229개 시·군·자치구
-          <br />
-          2SFCA 의료 접근성 분석
-        </div>
+        {!desktopCollapsed ? (
+          <div className="border-t border-border p-4 text-xs leading-relaxed text-muted-foreground">
+            의료가 닿지 않는 곳을 데이터로 찾다
+            <br />
+            전국 229개 시·군·자치구 분석
+          </div>
+        ) : null}
       </aside>
 
       {/* 모바일 상단바 */}
@@ -126,7 +171,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             className="absolute inset-0 bg-foreground/40"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute right-0 top-0 flex h-full w-72 max-w-[85%] flex-col bg-card shadow-xl">
+          <div className="absolute left-0 top-0 flex h-full w-72 max-w-[85%] flex-col bg-card shadow-xl">
             <div className="flex items-center justify-between border-b border-border p-4">
               <Brand />
               <button
@@ -162,11 +207,11 @@ function PageHeader() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <h1 className="text-balance text-2xl font-bold tracking-tight text-foreground break-keep sm:text-3xl">
-            전국 의료 인프라 취약도
+            메디리치
           </h1>
           <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground break-keep">
-            전국 229개 시·군·자치구의 인구구조와 의료 접근성을 분석하고, 병원 폐업
-            영향을 탐색합니다.
+            의료가 닿지 않는 곳을 데이터로 찾습니다. 전국 229개 시·군·자치구의
+            의료 접근성과 병원 폐업 영향을 분석합니다.
           </p>
         </div>
         <ul className="flex flex-wrap gap-1.5 lg:justify-end">

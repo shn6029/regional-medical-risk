@@ -18,9 +18,13 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: '전국 의료 인프라 취약도',
+  title: {
+    default: '메디리치 | 지역 의료 접근성 분석',
+    template: '%s | 메디리치',
+  },
   description:
-    '전국 229개 시·군·자치구의 인구구조와 의료 접근성을 분석하고, 병원 폐업 영향을 탐색하는 공공 데이터 분석 대시보드입니다.',
+    '메디리치(MediReach)는 전국 229개 시·군·자치구의 의료 접근성과 병원 폐업 영향을 분석하는 공공 데이터 대시보드입니다.',
+  applicationName: '메디리치',
 }
 
 export const viewport: Viewport = {

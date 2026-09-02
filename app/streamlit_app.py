@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PROCESSED_DIR = ROOT / "data" / "processed"
 NATIONAL_DIR = PROCESSED_DIR / "national"
 
-st.set_page_config(page_title="전국 의료 취약도", page_icon="🏥", layout="wide")
+st.set_page_config(page_title="메디리치 | 지역 의료 접근성 분석", page_icon="🏥", layout="wide")
 
 
 def _env_value(name: str) -> str:
@@ -237,8 +237,9 @@ if api_base_url:
     except (requests.RequestException, KeyError, ValueError) as error:
         accessibility_error = str(error)
 
-st.title("전국 의료 인프라 취약도")
+st.title("메디리치 (MediReach)")
 st.caption(
+    "의료가 닿지 않는 곳을 데이터로 찾다 · "
     "전국 229개 시·군·자치구의 의료 접근성·인구구조·폐업 시나리오 통합 분석 · "
     "실제 의료·정책 판단용 지표가 아닙니다."
 )

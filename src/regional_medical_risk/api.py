@@ -184,7 +184,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(
-    title="Regional Medical Risk API",
+    title="MediReach API",
     version="0.1.0",
     lifespan=lifespan,
 )

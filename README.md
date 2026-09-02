@@ -1,4 +1,6 @@
-# 전국 의료 인프라 취약도 분석
+# 메디리치 (MediReach)
+
+> 의료가 닿지 않는 곳을 데이터로 찾다
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.116%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)

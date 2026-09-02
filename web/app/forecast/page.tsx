@@ -93,7 +93,7 @@ export default function ForecastPage() {
       </Card>
 
       <div className="grid gap-6 lg:grid-cols-5">
-        <Card className="lg:col-span-3">
+        <Card className="min-w-0 lg:col-span-3">
           <CardHeader>
             <CardTitle>전국 65세 이상 인구 추이</CardTitle>
             <CardDescription>실측(2016–2024) 및 예측(2024–2028)</CardDescription>
@@ -107,7 +107,7 @@ export default function ForecastPage() {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
+        <Card className="min-w-0 lg:col-span-2">
           <CardHeader>
             <CardTitle>모델별 예측오차(MAE)</CardTitle>
             <CardDescription>막대가 짧을수록 정확 · 청록은 기준선</CardDescription>

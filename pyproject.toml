@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "regional-medical-risk"
 version = "0.1.0"
-description = "지역 인구구조 기반 의료 인프라 취약도 분석 및 폐업 시뮬레이션"
+description = "메디리치: 지역 의료 접근성 분석 및 병원 폐업 시뮬레이션"
 requires-python = ">=3.10"
 dependencies = [
   "fastapi>=0.116,<1",

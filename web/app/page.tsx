@@ -44,7 +44,7 @@ export default function OverviewPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="전국 의료 인프라 취약도 개요"
+        title="전국 의료 접근성 개요"
         description={`전국 ${NATIONAL.analyzedRegions}개 시·군·자치구의 인구구조와 의료 접근성을 종합한 취약도 진단입니다. (인구 ${NATIONAL.baseDate.population} · 의료기관 ${NATIONAL.baseDate.facility})`}
       />
 

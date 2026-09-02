@@ -1,4 +1,4 @@
-# 지역별 의료 취약도 · 접근성 대시보드 (web)
+# 메디리치(MediReach) 웹 대시보드
 
 기존 FastAPI 서버(`src/regional_medical_risk/api.py`)의 REST API를 소비하는
 Next.js(App Router) + TypeScript + Tailwind CSS 프론트엔드입니다.

@@ -25,8 +25,8 @@ export function ClosureScatter() {
     ) / 10
 
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <ScatterChart margin={{ top: 8, right: 16, bottom: 16, left: 4 }}>
+    <ResponsiveContainer width="100%" height={340}>
+      <ScatterChart margin={{ top: 8, right: 16, bottom: 16, left: 12 }}>
         <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
         <XAxis
           type="number"
@@ -55,7 +55,7 @@ export function ClosureScatter() {
           fontSize={12}
           tickLine={false}
           axisLine={false}
-          width={36}
+          width={60}
         />
         <ZAxis range={[80, 80]} />
         <ReferenceLine
