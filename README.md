@@ -7,7 +7,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL%20%2B%20PostGIS-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com/)
 ![Tests](https://img.shields.io/badge/tests-30%20passed-brightgreen)
 
-[라이브 대시보드](https://regional-medical-risk.vercel.app/) ·
+[라이브 대시보드](https://medireach-kr.vercel.app/) ·
 [FastAPI 상태](https://regional-medical-risk-api.onrender.com/health) ·
 [발표·면접 가이드](PORTFOLIO_GUIDE.md) ·
 [구현 현황](PROJECT_STATUS.md)
