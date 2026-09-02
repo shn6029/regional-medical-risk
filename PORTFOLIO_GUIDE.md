@@ -5,6 +5,7 @@
 [라이브 대시보드](https://medireach-kr.vercel.app/) ·
 [GitHub](https://github.com/shn6029/medireach) ·
 [FastAPI 상태](https://regional-medical-risk-api.onrender.com/health) ·
+[이력서용 요약](RESUME_PORTFOLIO.md) ·
 [구현 현황](PROJECT_STATUS.md)
 
 이 문서는 메디리치를 포트폴리오와 면접에서 설명하기 위한 기준 문서입니다.

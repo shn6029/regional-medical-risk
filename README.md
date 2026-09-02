@@ -9,6 +9,7 @@
 
 [라이브 대시보드](https://medireach-kr.vercel.app/) ·
 [FastAPI 상태](https://regional-medical-risk-api.onrender.com/health) ·
+[이력서용 프로젝트 소개](RESUME_PORTFOLIO.md) ·
 [발표·면접 가이드](PORTFOLIO_GUIDE.md) ·
 [구현 현황](PROJECT_STATUS.md)
 
