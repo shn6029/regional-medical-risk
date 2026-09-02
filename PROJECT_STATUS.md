@@ -1,6 +1,6 @@
-# 프로젝트 현재 상태
+# 메디리치 (MediReach) 현재 상태
 
-기준 시각: 2026-08-26 (Asia/Seoul)
+기준 시각: 2026-09-02 (Asia/Seoul)
 
 ## 한 줄 요약
 
@@ -46,6 +46,8 @@ Streamlit의 2SFCA 탭도 API와 연결했습니다. 다음 작업은 이 결과
 - 전국 106,770개 경로 기반 2SFCA 배치 산출 및 Supabase 저장
 - 최신 전국·지역·행정동 결과를 제공하는 읽기 전용 FastAPI
 - FastAPI 전국·지역 결과를 표시하는 Streamlit 2SFCA 탭
+- Next.js·Vercel 대시보드와 FastAPI 2SFCA 실데이터 연결
+- 메디리치 브랜드와 `medireach-kr.vercel.app` 프로덕션 도메인 적용
 - 신규 의료시설 K개 입지 최적화 계산 엔진 및 단위 테스트
   - 고령인구 가중 이동시간 최소화
   - 개선 인구 및 30분 초과 인구 계산
@@ -123,4 +125,4 @@ python -m pytest -q
 - `src/regional_medical_risk/optimization.py`: K개 신규 시설 입지 최적화
 - `src/regional_medical_risk/simulation.py`: 병원 폐업 What-if
 - `src/regional_medical_risk/forecast.py`: 기준선·ML 예측 비교
-- `data/processed/national/kakao_routes.csv`: 수집 중인 전국 경로 캐시
+- `data/processed/national/kakao_routes.csv`: 수집 완료한 전국 경로 캐시

@@ -1,8 +1,13 @@
-# 메디리치(MediReach) 포트폴리오 가이드
+# 메디리치 (MediReach) 포트폴리오 가이드
 
 지역 의료 접근성 분석 및 정책 배치 최적화 서비스
 
-이 문서는 프로젝트를 포트폴리오와 면접에서 설명하기 위한 기준 문서입니다.
+[라이브 대시보드](https://medireach-kr.vercel.app/) ·
+[GitHub](https://github.com/shn6029/medireach) ·
+[FastAPI 상태](https://regional-medical-risk-api.onrender.com/health) ·
+[구현 현황](PROJECT_STATUS.md)
+
+이 문서는 메디리치를 포트폴리오와 면접에서 설명하기 위한 기준 문서입니다.
 
 - **현재 구현**: 실제 코드와 데이터로 동작하거나 테스트가 완료된 내용
 - **진행 중**: 코드 일부는 있지만 전국 실데이터 또는 UI 연결이 완료되지 않은 내용
@@ -13,24 +18,37 @@
 ## 30초 소개
 
 인구 감소와 고령화가 진행되는 지역은 병원 수만으로 의료 접근성을 판단하기 어렵습니다.
-이 프로젝트는 주민등록인구, HIRA 의료기관, SGIS 행정경계와 행정동 인구, Kakao 자동차
-이동시간을 전국 229개 시·군·자치구 기준으로 정합합니다. 이를 이용해 30분 의료 접근
-가능 인구와 2SFCA 접근성을 계산하고, 한정된 예산으로 신규 의료시설 K개를 어디에
-배치해야 고령인구의 접근시간이 가장 많이 개선되는지 추천하는 정책 의사결정 서비스를
-목표로 합니다.
+메디리치는 주민등록인구·HIRA 의료기관·SGIS 행정경계와 행정동 인구를 전국 229개
+시·군·자치구로 정합하고, Kakao 자동차 경로 106,770개를 구축했습니다. 이를 이용해
+30분 의료 접근 가능 인구와 2SFCA 접근성을 계산하고, 병원 폐업 영향과 신규 의료시설
+배치 대안을 탐색하는 정책 의사결정 지원 서비스입니다.
+
+## 핵심 수치
+
+| 지표 | 결과 |
+|---|---:|
+| 분석 지역 | 229개 시·군·자치구 |
+| 행정동 수요점 | 3,559개 |
+| 분석 대상 병원급 기관 | 3,405개 |
+| Kakao 자동차 경로 | 106,770개 |
+| 고령인구 30분 커버리지 | 96.43% |
+| 실제 폐업 검증 | 237건 |
+| 폐업 영향 방향 일치율 | 92.4% |
+| 자동화 테스트 | 30개 통과 |
 
 ## 현재와 목표 범위
 
 | 구분 | 상태 |
 |---|---|
-| 전국 데이터 ETL·취약도·지도·폐업 What-if | 현재 구현 |
-| 실제 폐업 237건 방향성 검증 | 현재 구현 |
+| 전국 데이터 ETL·취약도·지도 | 현재 구현 |
+| 실제 폐업 237건 What-if 방향성 검증 | 현재 구현 |
 | 인구 예측과 강한 기준선 비교 | 현재 구현 |
-| Kakao 전국 이동시간 | 진행 중 |
-| 30분 접근 가능 인구·2SFCA | 계산 엔진 구현, 전국 통합 진행 중 |
-| K개 신규 시설 입지 최적화 | 계산 엔진 구현, 실제 후보 행렬·UI 미완료 |
-| FastAPI·PostGIS·React 서비스 | 목표 구현 |
-| 추가 정책 What-if·미래 취약도·SHAP | 목표 구현 |
+| Kakao 자동차 경로 106,770개 | 수집·적재 완료 |
+| 30분 접근 가능 인구·2SFCA | 전국 계산·Supabase 저장·FastAPI 조회 완료 |
+| Next.js·Vercel 대시보드 | 구현 완료, 2SFCA는 실데이터·그 외 일부 화면은 대표 샘플 |
+| Streamlit·FastAPI·PostGIS | 현재 구현 |
+| K개 신규 시설 입지 최적화 | 계산 엔진 완료, 실제 후보 행렬·UI 진행 중 |
+| 추가 정책 What-if·미래 취약도·SHAP | 미구현 |
 
 # 1. 프로젝트 기획
 
@@ -44,7 +62,7 @@
 - 한 병원을 여러 지역 인구가 함께 이용해 공급 경쟁이 발생하는 경우
 - 핵심 병원 한 곳의 폐업이 주변 접근성에 큰 영향을 주는 경우
 
-따라서 이 프로젝트는 단순한 데이터 조회가 아니라 다음 질문에 답하도록 기획했습니다.
+따라서 메디리치는 단순한 데이터 조회가 아니라 다음 질문에 답하도록 기획했습니다.
 
 > 한정된 예산으로 의료 접근성이 가장 많이 개선되는 지역은 어디인가?
 
@@ -54,25 +72,18 @@
 - 공공의료 시설 배치 검토자
 - 지역 의료 접근성 연구자와 데이터 분석가
 
-## 1.3 서비스 입력과 출력
+## 1.3 서비스 화면과 데이터 연결
 
-사용자는 지역, 대상 인구, 접근시간 기준, 신규 시설 수 K를 입력합니다.
+| 화면 | 주요 입력·출력 | 데이터 상태 |
+|---|---|---|
+| 전국 개요·지도·지역 상세 | 취약도, 병원·수요점, 지역 비교 | 대표 샘플과 실제 전국 집계 혼합 |
+| 고령인구 예측 | 기준선·ML 오차 비교, 미래 추이 | Python 분석 완료, 웹은 대표 샘플 |
+| 병원 폐업 시뮬레이션 | 지역·병원 선택, 전후 접근성·취약도 | 엔진·실제 폐업 검증 완료, 웹은 대표 샘플 |
+| 2SFCA 접근성 | 전국 요약, 지역별 고령자 커버리지 | FastAPI 실데이터 |
+| 신규 시설 K개 배치 | 추천 후보와 기준선 비교 | 엔진 완료, 후보 행렬·UI 진행 중 |
 
-```text
-지역: 전국 또는 특정 시·도
-대상: 전체 인구 / 65세 이상 인구
-접근 기준: 30분 또는 60분
-신규 시설 수: K=1~10
-```
-
-서비스는 다음 결과를 제공합니다.
-
-- 현재 평균 자동차 접근시간
-- 30분 이내 접근 가능 인구와 초과 인구
-- 병상과 수요 경쟁을 반영한 2SFCA 점수
-- 추천 신규 시설 위치 K개
-- 설치 전후 평균시간과 영향 인구 변화
-- 최적화·인구순·무작위 배치 결과 비교
+웹 화면 하단에는 실데이터와 대표 샘플 여부를 명시합니다. 완료되지 않은 입지 추천 UI를
+현재 기능처럼 제시하지 않고, 분석 엔진과 서비스 연결 범위를 구분합니다.
 
 ## 1.4 개선 효과
 
@@ -88,7 +99,7 @@
 | HIRA 연도별 스냅샷 | 2023~2025년 | 실제 폐업 교차검증 | 수집 완료 |
 | HIRA 요양기관 폐업 현황 | 2025년 말 누적 | 폐업일, 기관명, 종별, 지역 | 수집 완료 |
 | SGIS 행정경계·통계 | 2025년 경계, 2024년 통계 | 시군구 경계, 행정동 인구·중심점 | 수집 완료 |
-| Kakao Mobility 길찾기 | 수집 시점 현재 교통망 | 자동차 이동거리·예상시간 | 수집 중 |
+| Kakao Mobility 길찾기 | 수집 시점 현재 교통망 | 자동차 이동거리·예상시간 | 106,770개 수집 완료 |
 
 현재 정합 결과는 전국 229개 지역, 인구 이력 2,748행, 행정동 수요 지점 3,559개,
 HIRA 기관 79,425개입니다. 이 중 병원·종합병원·요양병원·정신병원·보건의료원 등
@@ -215,87 +226,53 @@ Linear Regression은 선형추세 기준선보다 MAE가 7.9% 높았습니다. �
 계산하고, 매 단계에서 추가 개선량이 가장 큰 후보를 선택하는 greedy 방식입니다.
 동일한 K에 대해 인구순 배치와 고정 시드 무작위 배치를 기준선으로 비교합니다.
 
-# 5. 파이썬 백엔드 연동 과정
+# 5. 서비스 연동 구조
 
 ## 5.1 현재 구현
 
-현재는 Streamlit 프로세스가 Python 분석 모듈을 직접 호출합니다.
+전국 데이터와 자동차 경로는 배치 파이프라인에서 Supabase PostgreSQL에 적재합니다.
+2SFCA 계산 결과는 실행 이력과 함께 저장하고, FastAPI가 최신 완료 실행만 읽어
+Next.js와 Streamlit에 제공합니다.
 
 ```text
-사용자 입력
-  → Streamlit 위젯
-  → simulation.py / forecast.py / accessibility.py / optimization.py
-  → pandas DataFrame 결과
-  → 지도·지표·표 렌더링
+주민등록인구·HIRA·SGIS·Kakao
+  → Python ETL·경로 수집
+  → Supabase PostgreSQL + PostGIS
+  → 2SFCA 배치 계산·결과 저장
+  → FastAPI 읽기 API
+  → Next.js 2SFCA 화면 / Streamlit 2SFCA 탭
 ```
 
-예를 들어 병원 폐업 요청은 지역과 병원 ID를 입력받아 병원 제거 전후의 접근거리,
-취약도, 영향 인구를 반환합니다. K개 입지 엔진은 현재 접근시간, 후보지 이동시간,
-고령인구, K를 입력받아 추천 후보 순서와 전후 지표를 반환합니다.
+Next.js는 서버 프록시를 통해 FastAPI 주소를 숨기고, 로딩·오류·빈 결과 상태를 각각
+처리합니다. DB 연결 문자열과 서비스 역할 키는 브라우저에 전달하지 않습니다.
 
-## 5.2 목표 구현
+Streamlit의 취약도·예측·폐업 What-if·지도 화면은 Python 분석 모듈을 직접 호출합니다.
+K개 입지 엔진도 구현되어 있지만 실제 후보지 이동시간 행렬과 사용자 화면은 아직
+연결하지 않았습니다.
 
-Python 계산 모듈을 FastAPI 서비스 계층에서 호출하도록 분리합니다.
+## 5.2 실데이터와 대표 샘플 구분
 
-```text
-React 입력 폼
-  → JSON 요청
-  → FastAPI Pydantic 검증
-  → 분석 서비스
-  → PostGIS 조회 및 계산
-  → JSON 응답
-  → React 지도·비교 차트 갱신
-```
+- Next.js `2SFCA 접근성` 화면: FastAPI와 Supabase의 최신 실데이터
+- Next.js 전국 개요·지도·지역 상세·예측·폐업 화면: 사용자 흐름을 보여주는 대표 샘플
+- Streamlit: 정합 데이터와 Python 계산 모듈 중심의 분석 화면
+- 신규 시설 K개 입지: 계산 엔진과 단위 테스트 완료, 실제 후보 행렬·UI 미완료
 
-입지 최적화 요청 예시:
-
-```json
-{
-  "province_code": "47",
-  "facility_count": 3,
-  "target_population": "senior_population",
-  "threshold_minutes": 30
-}
-```
-
-목표 응답 예시:
-
-```json
-{
-  "selected_sites": [
-    {
-      "rank": 1,
-      "candidate_id": "candidate-001",
-      "region_name": "영양군",
-      "incremental_weighted_minutes_saved": 187420
-    }
-  ],
-  "metrics": {
-    "weighted_mean_duration_before": 34.8,
-    "weighted_mean_duration_after": 26.1,
-    "improved_senior_population": 8420,
-    "senior_population_over_30min_before": 15120,
-    "senior_population_over_30min_after": 6700
-  },
-  "comparison": {
-    "optimized": 26.1,
-    "population_priority": 29.4,
-    "random": 31.8
-  }
-}
-```
-
-예시 숫자는 API 계약 설명을 위한 형태이며 실제 분석 결과가 아닙니다.
+이 구분은 각 웹 화면 하단과 README에 표시합니다. 포트폴리오에서는 프로토타입 화면을
+실데이터 서비스로 과장하지 않고, 계산 엔진·데이터 파이프라인·UI 연결 상태를 분리해
+설명합니다.
 
 # 6. 서비스 DB와 테이블 구성
 
-## 6.1 목표 기술
+## 6.1 현재 기술
 
-- PostgreSQL
+- Supabase PostgreSQL
 - PostGIS
-- Alembic 마이그레이션
+- SQL 마이그레이션
 - 공간 조회용 GIST 인덱스
 - 경로·시점 조회용 복합 B-tree 인덱스
+
+초기 마이그레이션은 실제 원격 Supabase에 적용했으며, 모든 공개 테이블에 RLS를
+활성화하고 브라우저 직접 접근 정책은 만들지 않았습니다.
 
 ## 6.2 핵심 테이블
 
@@ -348,153 +325,154 @@ React 입력 폼
 | `status` | 실제·추정·실패 상태 |
 | `collected_at` | 수집 시각 |
 
-### `accessibility_scores`
+### `accessibility_runs`, `demand_accessibility_scores`, `regional_accessibility_scores`
 
 | 열 | 설명 |
 |---|---|
-| `region_code`, `calculated_at` PK | 지역·산출 버전 |
-| `population_within_30min` | 30분 접근 인구 |
-| `senior_within_30min` | 30분 접근 고령인구 |
-| `two_sfca_score` | 의료 접근성 점수 |
+| `run_id` | 계산 실행과 데이터 버전 |
+| `method_version`, `catchment_minutes` | 분석 방법과 임계시간 |
+| `accessible_hospital_count`, `accessible_beds` | 수요점별 접근 공급량 |
+| `population_within_threshold_pct` | 지역별 전체 인구 커버리지 |
+| `senior_within_threshold_pct` | 지역별 고령인구 커버리지 |
+| `two_sfca_score` | 수요 경쟁을 반영한 의료 접근성 점수 |
 
 ### `candidate_sites`, `candidate_routes`
 
 신규 시설 후보 좌표와 수요 지점별 후보 이동시간을 저장해 K개 최적화를 반복 실행할 때
-외부 길찾기 API를 다시 호출하지 않도록 합니다.
+외부 길찾기 API를 다시 호출하지 않도록 설계했습니다. 테이블과 계산 엔진은 준비됐지만
+실제 후보 데이터와 이동시간 행렬은 아직 구축 중입니다.
 
 ### `scenario_runs`, `routing_jobs`
 
 시나리오 입력·결과·실행시간과 카카오 경로 작업의 상태, 진행률, 오류, 재시도 횟수를
-저장합니다.
+저장하기 위한 스키마입니다. 현재 경로 수집은 로컬 CSV 캐시와 이어받기 방식으로
+완료했으며, 작업 API와 비동기 worker 연결은 후속 범위입니다.
 
 ## 6.3 주요 인덱스
 
-- `regions.geometry`, `demand_points.location`, `facilities.location`: GIST
-- `route_matrix(demand_id, duration_sec)`
+- `regions.boundary`, `regions.center`, `demand_points.location`, `facilities.location`: GIST
+- `route_matrix(demand_id, route_duration_min)`
 - `route_matrix(facility_id, demand_id)`
-- `facilities(region_code, facility_type, snapshot_date)`
-- `population_history(region_code, year)`
+- `facilities(region_code, facility_type)`
+- `facility_snapshots(snapshot_date, region_code)`
+- `regional_accessibility_scores(region_code, run_id)`
 
 # 7. 백엔드 REST API
 
-## 7.1 목표 API
+## 7.1 현재 API
 
 | Method | Endpoint | 역할 |
 |---|---|---|
-| `GET` | `/api/v1/regions` | 지역 목록과 요약 지표 |
-| `GET` | `/api/v1/regions/{code}` | 지역 상세 |
-| `GET` | `/api/v1/regions/{code}/facilities` | 지도 병원 목록 |
-| `GET` | `/api/v1/regions/{code}/accessibility` | 30분 접근성과 2SFCA |
-| `POST` | `/api/v1/scenarios/closures` | 병원 폐업 What-if |
-| `POST` | `/api/v1/scenarios/bed-reduction` | 병상 감소 What-if |
-| `POST` | `/api/v1/optimizations/facilities` | K개 입지 추천 |
-| `POST` | `/api/v1/routing/jobs` | 경로 수집 작업 생성 |
-| `GET` | `/api/v1/routing/jobs/{job_id}` | 작업 진행률 조회 |
+| `GET` | `/health` | API 상태 확인 |
+| `GET` | `/api/v1/accessibility/latest` | 최신 완료 2SFCA 실행의 전국 요약 |
+| `GET` | `/api/v1/accessibility/regions` | 최신 실행의 229개 지역 결과 |
+| `GET` | `/api/v1/accessibility/regions/{region_code}` | 지역과 행정동 수요점 상세 |
 
 ## 7.2 계층 구조
 
 ```text
-routers      HTTP와 상태 코드
-schemas      Pydantic 요청·응답 계약
-services     시뮬레이션·2SFCA·최적화 업무 로직
-repositories PostGIS 조회와 저장
-workers      경로 수집·재시도·지표 재계산
+Next.js API proxy  브라우저 요청과 FastAPI 주소 분리
+FastAPI endpoint   HTTP 응답과 404 처리
+repository         최신 완료 실행·지역·수요점 조회
+psycopg pool       제한된 PostgreSQL 연결 재사용
+Supabase           실행 이력과 2SFCA 결과 저장
 ```
 
-분석 알고리즘을 라우터 안에 직접 작성하지 않고 현재 Python 모듈을 서비스 계층에서
-재사용합니다. 동일한 입력은 데이터 버전이 같을 때 같은 결과를 반환하도록 하고,
-시나리오 결과에는 데이터 기준일과 계산 버전을 포함합니다.
+FastAPI는 계산을 요청마다 다시 수행하지 않고, 배치 파이프라인이 저장한 최신
+`completed` 실행을 읽습니다. 수요점별 결과와 지역 집계가 같은 `run_id`를 사용하므로
+화면에서 데이터 버전을 추적할 수 있습니다.
 
-## 7.3 오류와 성능 관리
+## 7.3 현재 오류·성능 처리
 
-- 존재하지 않는 지역·병원·후보: `404`
-- 잘못된 K·시간 기준: `422`
-- 경로 데이터 준비 중: `409`와 현재 진행률
-- 오래 걸리는 작업: `202 Accepted`와 `job_id`
-- 지역 요약과 2SFCA 결과 캐시
-- API 응답시간, 최적화 실행시간, 경로 실패율 기록
+- 완료된 2SFCA 실행이 없거나 지역이 없으면 `404`
+- 연결 풀을 재사용하고 애플리케이션 종료 시 명시적으로 닫음
+- DB 연결 문자열은 서버에서만 사용
+- Next.js에서 로딩·빈 결과·API 오류와 재시도 UI를 분리
+
+폐업 What-if, K개 입지 추천과 경로 작업 생성 API는 아직 공개 REST API로 구현하지
+않았습니다. 현재는 Python 계산 엔진으로 검증하며, 실제 후보 행렬과 작업 관리 방식이
+완성된 뒤 서비스 API로 확장할 계획입니다.
 
 # 8. 주요 프론트엔드-백엔드 연동
 
-## 8.1 지역 상세
+## 8.1 2SFCA 실데이터 화면
 
 ```text
-시·도 선택
-  → GET /regions?province_code=47
-  → 시군구 목록 갱신
-시군구 선택
-  → GET /regions/47170
-  → GET /regions/47170/facilities
-  → GET /regions/47170/accessibility
-  → 지도 중심·병원점·2SFCA 카드 갱신
+Next.js 2SFCA 화면
+  → /api/proxy 경유
+  → GET /api/v1/accessibility/latest
+  → GET /api/v1/accessibility/regions
+  → 전국 커버리지·수요점·경로 수와 지역 순위 렌더링
 ```
 
-병원점을 클릭하면 프론트가 이미 받은 병원명, 종별, 병상, 주소, 개설일을 정보창에
-표시하므로 추가 API 호출을 만들지 않습니다.
+SWR로 두 요청의 로딩과 재시도를 관리합니다. 지역 상세 API는 행정동별 접근 병원 수,
+병상 수, 임계시간 충족 여부와 2SFCA 점수를 반환합니다.
 
-## 8.2 병원 폐업 What-if
+## 8.2 대표 샘플 화면
+
+- 전국 개요·지도: 취약도 분포와 지역 탐색 흐름
+- 지역 상세: 병원점·행정동 수요점과 세부 카드
+- 고령인구 예측: 기준선과 ML 모델의 MAE 및 추이 비교
+- 폐업 시뮬레이션: 병원 선택과 폐업 전후 지표·검증 산점도
+
+이 화면들은 분석 방법과 UX를 보여주기 위한 대표 샘플이며, 화면 하단에 그 사실을
+표시합니다. Python 엔진과 전국 검증 결과가 존재하더라도 웹의 개별 표시값이 실데이터라고
+오해하지 않도록 구분했습니다.
+
+## 8.3 Streamlit 분석 화면
 
 ```text
-병원 선택
-  → POST /scenarios/closures
-  → 폐업 전후 접근시간·취약도·영향 인구 수신
-  → 지도와 지표를 같은 응답 버전으로 갱신
+사용자 입력
+  → Streamlit 위젯
+  → simulation.py / forecast.py / accessibility.py
+  → pandas DataFrame
+  → 지도·지표·표 렌더링
 ```
 
-중복 클릭을 막고 요청 중 로딩 상태를 표시하며, 실패 시 기존 결과를 유지하고 오류 이유를
-보여줍니다.
+2SFCA 탭은 FastAPI도 조회하며, API 연결 실패 시 원인을 화면에 표시합니다.
 
-## 8.3 K개 신규 시설 최적화
+## 8.4 경로 수집 배치
 
 ```text
-지역·K·대상 인구·시간 기준 입력
-  → POST /optimizations/facilities
-  → 추천 위치·단계별 개선량·기준선 비교 수신
-  → 지도 추천 번호 1~K 표시
-  → 설치 전후와 인구순·무작위 비교 차트 갱신
+Haversine으로 수요점별 가까운 병원 30곳 선별
+  → Kakao 다중 목적지 API 호출
+  → 25개 출발지마다 CSV 저장
+  → 쿼터 도달·중단 시 기존 CSV에서 재개
+  → 3,559개 출발지와 106,770개 경로 적재
 ```
 
-계산이 길어질 경우 서버는 `202`와 작업 ID를 반환하고, 프론트는 작업 상태를 주기적으로
-조회합니다. 완료 응답을 받으면 지도와 차트를 한 번에 교체합니다.
+관리 화면과 비동기 작업 API는 아직 구현하지 않았습니다. 현재 배치는 CLI와 CSV 캐시로
+재현·복구할 수 있습니다.
 
-## 8.4 경로 수집 작업
-
-```text
-관리 화면에서 작업 시작
-  → POST /routing/jobs
-  → job_id 수신
-  → GET /routing/jobs/{job_id} 반복 조회
-  → 완료 출발지·전체 출발지·실패 건수 표시
-```
-
-새로고침해도 서버의 작업 상태를 다시 조회하므로 진행률이 사라지지 않습니다.
-
-# 목표 서비스 구조
+# 현재 서비스 구조
 
 ```mermaid
 flowchart LR
-    U["React 사용자 화면"] -->|"REST JSON"| A["FastAPI"]
-    A --> S["분석 서비스"]
-    A --> R["PostGIS Repository"]
-    S --> M["2SFCA·What-if·입지 최적화"]
-    R --> D[("PostgreSQL + PostGIS")]
-    A --> J["Routing Job"]
-    J --> K["Kakao Mobility API"]
-    J --> D
+    A["주민등록인구 · HIRA · SGIS"] --> E["Python ETL"]
+    K["Kakao Mobility API"] --> R["경로 수집 · 캐시 · 이어받기"]
+    E --> L["Supabase 적재기"]
+    R --> L
+    L --> D[("PostgreSQL + PostGIS")]
+    D --> B["2SFCA 배치 계산"]
+    B --> D
+    N["Next.js · Vercel"] --> F["FastAPI 읽기 API"]
+    S["Streamlit · Render"] --> F
+    F --> D
+    S --> M["예측 · 폐업 What-if · 지도 모듈"]
 ```
 
 # 발표 흐름
 
-1. 병원 수만으로 접근성을 판단하기 어려운 문제 제시
-2. 전국 4종 데이터와 분석 단위 설명
-3. 행정코드·인코딩·결측·폐업 매칭 문제와 해결 과정
-4. 취약도와 2SFCA 정의
-5. 시간 홀드아웃과 강한 기준선 비교 결과
-6. 폐업 What-if와 실제 폐업 방향성 검증
-7. K개 신규 시설 입지 최적화 방식과 기준선 비교
-8. FastAPI 요청·응답과 PostGIS 모델
-9. React 지도에서 입력부터 결과까지의 연동 흐름
-10. 한계, 미완료 범위, 다음 검증 계획
+1. 메디리치가 해결하려는 “병원 수와 실제 접근성의 차이” 제시
+2. 전국 229개 지역·3,559개 수요점·3,405개 병원의 분석 규모 설명
+3. 행정코드·공간 단위·SGIS 결측 정합 과정 설명
+4. API 쿼터와 중단 복구를 고려한 Kakao 경로 106,770개 구축
+5. 30분 커버리지와 수요 경쟁을 반영한 2SFCA 정의
+6. 실제 폐업 237건을 이용한 What-if 방향성 검증
+7. 시간 홀드아웃에서 ML과 강한 선형추세 기준선 비교
+8. Next.js → FastAPI → Supabase 실데이터 화면 시연
+9. K개 입지 엔진의 greedy 방식과 아직 남은 후보 행렬·UI 구분
+10. 도로 원점 추정 경로, 중심점 가정과 정책 지표의 한계 설명
 
 # 면접에서 강조할 핵심
 
@@ -502,6 +480,7 @@ flowchart LR
 - 랜덤 분할 대신 시간 홀드아웃을 사용했고, ML이 단순 기준선보다 나쁘다는 결과를 숨기지
   않았습니다.
 - 외부 API 쿼터와 장기 작업 중단을 고려해 캐시와 이어받기를 설계했습니다.
+- 배치 계산 결과를 Supabase에 버전별로 저장하고 FastAPI가 최신 완료 실행만 읽도록
+  구성했습니다.
 - 분석 결과를 조회하는 데서 끝내지 않고 신규 시설 배치라는 의사결정 문제로 확장했습니다.
-- 현재 구현과 목표 아키텍처를 구분하며, 전국 실데이터 검증이 끝난 기능만 완료로
-  표시합니다.
+- 웹의 실데이터와 대표 샘플, 계산 엔진과 미완료 UI를 명시적으로 구분했습니다.
