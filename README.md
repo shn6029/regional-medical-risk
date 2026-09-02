@@ -310,7 +310,7 @@ python -m regional_medical_risk.routing `
 ## 프로젝트 구조
 
 ```text
-regional-medical-risk/
+medireach/
 ├── app/
 │   └── streamlit_app.py          # 분석 대시보드
 ├── web/                           # Next.js·TypeScript Vercel 대시보드

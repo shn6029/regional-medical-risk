@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "regional-medical-risk"
+name = "medireach"
 version = "0.1.0"
 description = "메디리치: 지역 의료 접근성 분석 및 병원 폐업 시뮬레이션"
 requires-python = ">=3.10"

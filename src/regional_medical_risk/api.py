@@ -162,7 +162,7 @@ def database_pool() -> ConnectionPool:
             "autocommit": True,
             "prepare_threshold": None,
             "sslmode": "require",
-            "application_name": "regional-medical-risk-api",
+            "application_name": "medireach-api",
             "row_factory": dict_row,
         },
         check=ConnectionPool.check_connection,

@@ -547,7 +547,7 @@ def connect_database(database_url: str):
         autocommit=True,
         prepare_threshold=None,
         sslmode="require",
-        application_name="regional-medical-risk-loader",
+        application_name="medireach-loader",
     )
 
 
